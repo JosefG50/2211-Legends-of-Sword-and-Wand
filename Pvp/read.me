@@ -1,0 +1,79 @@
+# Legends of Sword and Wand - PvP Service
+
+A **Python-based PvP service** for managing player battles, invitations, and league records. This service is designed using **Domain-Driven Design (DDD)** principles and can be integrated with a frontend, external battle engine, and PvE systems.
+
+---
+
+## **Table of Contents**
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [Running Tests](#running-tests)
+- [Docker](#docker)
+- [Interfaces](#interfaces)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
+
+## **Overview**
+This service provides:
+- Player management (`User`, `Party`)
+- Invitation workflow (invite, accept, decline)
+- Party selection for PvP matches
+- Battle match creation and result recording
+- League record updates
+
+It is designed for **microservice integration**, exposing APIs for UI clients, battle resolution, and PvE party submissions.
+
+---
+
+## **Architecture**
+
+### Layers
+1. **Domain Layer**
+   - Core entities: `User`, `Party`, `LeagueRecord`, `Invitation`, `BattleMatch`
+   - Business logic lives here
+
+2. **Application Layer**
+   - Services orchestrating domain logic:
+     - `InvitePlayerService`
+     - `AcceptInviteService`
+     - `DeclineInviteService`
+     - `SelectPartyService`
+     - `StartBattleService`
+     - `UpdateLeagueService`
+
+3. **Infrastructure Layer**
+   - Persistence with `SQLAlchemy`
+   - Repositories: `UserRepository`, `PartyRepository`, `LeagueRepository`
+   - Database: `sqlite:///pvp_service.db` by default
+
+4. **Interfaces**
+   - Exposes APIs to external consumers (UI, battle system, PvE):
+     - `ClientAPI`
+     - `BattleSystemAPI`
+     - `PVEPartySubmissionAPI`
+
+---
+
+## **Getting Started**
+
+### Prerequisites
+- Python 3.14+
+- [Poetry](https://python-poetry.org/) or pip for dependencies
+- Optional: Docker for containerized deployment
+
+### Installation
+
+```bash
+git clone https://github.com/<your-username>/Legends-of-Sword-and-Wand.git
+cd Legends-of-Sword-and-Wand/Pvp
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+venv\Scripts\activate     # Windows
+pip install -r requirements.txt
+
+
+### Run the Service
+python application/main.py
