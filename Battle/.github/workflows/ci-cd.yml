@@ -19,12 +19,12 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r pvp_service/requirements.txt
+        run: pip install -r Battle/requirements.txt
 
-      - name: Run tests
-        run: python pvp_service/tests.py
+      - name: Run unit and integration tests
+        run: python Battle/tests.py
 
-  # Step 2: Build and push Docker image (only on main branch)
+  # Step 2: Build and push Docker image (only on main)
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -40,24 +40,26 @@ jobs:
 
       - name: Build and push image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/pvp-service:latest pvp_service/
-          docker push ${{ secrets.DOCKER_USERNAME }}/pvp-service:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/battle-service:latest Battle/
+          docker push ${{ secrets.DOCKER_USERNAME }}/battle-service:latest
 
-  # Step 3: Deploy to your server (only on main branch)
+  # Step 3: Deploy the full system with Docker Compose (only on main)
   deploy:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Deploy via SSH
+      - uses: actions/checkout@v4
+
+      - name: Deploy full system via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/pvp-service:latest
-            docker stop pvp-service || true
-            docker rm pvp-service || true
-            docker run -d --name pvp-service -p 5003:5003 --restart unless-stopped \
-              ${{ secrets.DOCKER_USERNAME }}/pvp-service:latest
+            cd /app
+            git pull origin main
+            docker compose pull
+            docker compose up -d --build battle-service
+            echo "Battle service deployed successfully"

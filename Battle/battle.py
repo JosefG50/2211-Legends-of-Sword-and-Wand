@@ -276,7 +276,7 @@ def run_battle(inviter_party_data, invitee_party_data, inviter_name, invitee_nam
     log.append(f"=== {inviter_name} vs {invitee_name} ===")
 
     round_number = 0
-    max_rounds = 100 
+    max_rounds = 100  # safety limit so the battle can't go on forever
 
     while round_number < max_rounds:
         if not any(h.is_alive for h in team_a):
