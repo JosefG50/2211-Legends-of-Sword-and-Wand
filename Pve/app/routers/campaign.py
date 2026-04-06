@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.db_models import Campaign, CampaignStatus
 from app.models.schemas import (
-    CampaignCreate, CampaignState, SaveResponse, SavePartyRequest, SavePartyResponse,
+    CampaignCreate, CampaignState, CampaignSummary, SaveResponse, SavePartyRequest, SavePartyResponse,
 )
 from app.services.hero_service import create_hero_for_campaign, hero_to_schema
 from app.config import settings
@@ -66,6 +66,18 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
         last_inn_room=campaign.last_inn_room,
         heroes=[hero_to_schema(h) for h in campaign.heroes],
     )
+
+
+@router.get("/user/{user_id}", response_model=list[CampaignSummary])
+def list_user_campaigns(user_id: int, db: Session = Depends(get_db)):
+    """List campaigns for a user, newest first."""
+    campaigns = (
+        db.query(Campaign)
+        .filter(Campaign.user_id == user_id)
+        .order_by(Campaign.id.desc())
+        .all()
+    )
+    return campaigns
 
 
 @router.post("/{campaign_id}/save", response_model=SaveResponse)

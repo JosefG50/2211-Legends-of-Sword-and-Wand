@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.session import create_tables
-from app.routers import campaign, map, inn, battle, score
+from app.routers import auth, campaign, map, inn, battle, score
 
 app = FastAPI(
     title="Legends of Sword and Wand — PvE Service",
@@ -28,6 +28,7 @@ def on_startup():
 
 
 app.include_router(campaign.router)
+app.include_router(auth.router)
 app.include_router(map.router)
 app.include_router(inn.router)
 app.include_router(battle.router)

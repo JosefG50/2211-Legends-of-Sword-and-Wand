@@ -75,6 +75,16 @@ class CampaignCreate(BaseModel):
     hero_class: HeroClass
 
 
+class CampaignSummary(BaseModel):
+    id: int
+    status: CampaignStatus
+    current_room: int
+    gold: int
+
+    class Config:
+        from_attributes = True
+
+
 class CampaignState(BaseModel):
     id: int
     user_id: int
@@ -247,6 +257,24 @@ class SavePartyResponse(BaseModel):
     success: bool
     message: str
     saved_party_id: Optional[int] = None
+
+
+class LoginRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=100)
+    password: str = Field(min_length=1, max_length=100)
+
+
+class UserOut(BaseModel):
+    id: int
+    username: str
+
+    class Config:
+        from_attributes = True
+
+
+class LoginResponse(BaseModel):
+    user: UserOut
+    created: bool
 
 
 RoomResult.model_rebuild()
