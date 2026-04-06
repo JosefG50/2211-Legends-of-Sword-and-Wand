@@ -433,7 +433,31 @@ def submit_action():
     else:
         conn.close()
         return jsonify({"error": f"Unknown action '{action}'. Valid: attack, defend, wait, cast:<ability>"}), 400
-
+    # --- PVE AUTO-MONSTER LOGIC ---
+    if mode == "pve":
+        import random
+        while True:
+            # Peek at whose turn is next
+            next_hero, next_team = get_active_hero(team_a, team_b, turn_index)
+            
+            # Break the loop if the battle is over, or if it is the Player's turn (Team A)
+            if not next_hero or next_team == "a":
+                break
+                
+            alive_players = [h for h in team_a if h["hp"] > 0]
+            if not alive_players:
+                break # All players are dead
+                
+            if next_hero.get("stunned"):
+                log.append(f"  {next_hero['name']} is stunned and loses their turn!")
+                next_hero["stunned"] = False
+            else:
+                # Basic AI: Pick a random alive player and attack them
+                target = random.choice(alive_players)
+                apply_attack(next_hero, target, log)
+                
+            turn_index += 1
+    # --- END PVE AUTO-MONSTER LOGIC ---
     # Build new state
     state = build_state(battle_id, team_a, team_b, state["name_a"], state["name_b"], log, turn_index, mode)
 
