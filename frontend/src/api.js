@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // All requests go through the API Gateway
 const client = axios.create({
-    baseURL: 'http://localhost:80',
+    baseURL: 'http://localhost:8000',
 })
 
 // Automatically attach the auth token to every request
