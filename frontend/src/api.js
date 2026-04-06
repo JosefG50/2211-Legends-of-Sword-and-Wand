@@ -44,6 +44,11 @@ export async function getCampaign(campaignId) {
     return res.data
 }
 
+export async function getUserCampaigns(userId) {
+    const res = await client.get(`/pve/campaign/user/${userId}`)
+    return res.data
+}
+
 export async function nextRoom(campaignId) {
     const res = await client.post(`/pve/campaign/${campaignId}/next-room`)
     return res.data
