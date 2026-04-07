@@ -1,0 +1,65 @@
+name: Battle Service CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Step 1: Run all tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r Battle/requirements.txt
+
+      - name: Run unit and integration tests
+        run: python Battle/tests.py
+
+  # Step 2: Build and push Docker image (only on main)
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/battle-service:latest Battle/
+          docker push ${{ secrets.DOCKER_USERNAME }}/battle-service:latest
+
+  # Step 3: Deploy the full system with Docker Compose (only on main)
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy full system via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /app
+            git pull origin main
+            docker compose pull
+            docker compose up -d --build battle-service
+            echo "Battle service deployed successfully"
