@@ -161,6 +161,15 @@ export async function getBattleState(battleId) {
   const res = await battleClient.get(`/battle/state/${battleId}`);
   return res.data;
 }
+// ─── PvP (Main Menu) ─────────────────────────────────────────────────────
+ 
+const PVP_URL = 'http://localhost:8080'; // Your my-api service
+
+export async function getUserParties(username) {
+    const response = await fetch(`${PVP_URL}/players/${username}/parties`);
+    if (!response.ok) throw new Error('Failed to fetch PvP parties');
+    return response.json();
+}
 
 // ─── PvP (battle service) ─────────────────────────────────────────────────────
 

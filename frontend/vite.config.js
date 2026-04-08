@@ -6,8 +6,21 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
+    // This tells the browser to look at localhost for the websocket signals
+    hmr: {
+      clientPort: 5173,
+    },
+    // Required for Docker to detect file changes on most host OSs
+    watch: {
+      usePolling: true,
+    },
     proxy: {
-      // All /pve/* requests get forwarded to the PvE service
+      // This catches /auth/login, /auth/register, etc.
+      "/auth": {
+        target: "http://pve-service:8000",
+        changeOrigin: true,
+      },
+      // This catches your other pve routes
       "/pve": {
         target: "http://pve-service:8000",
         changeOrigin: true,

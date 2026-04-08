@@ -596,3 +596,35 @@ tr.highlight {
   opacity: 0.4;
   filter: grayscale(1);
 }
+/* ── PvP Hub Extension ──────────────── */
+.pvp-container {
+  margin-top: 20px; /* Space below the PVE grid */
+}
+
+.pvp-placeholder {
+  border: 2px dashed #4e4e91; /* Dashed border to show it's "in progress" */
+  min-height: 150px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.pvp-placeholder h2 {
+  color: #a2a2ff; /* A slightly cooler blue/purple for PvP */
+}
+
+.pvp-test-content p {
+  color: #888;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.test-box-visual {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+  background: #0f3460;
+  border: 1px solid #444;
+  border-radius: 8px;
+  opacity: 0.5;
+}

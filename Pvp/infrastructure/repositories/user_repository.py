@@ -8,28 +8,21 @@ class UserRepository:
         self.db = db
 
     def save(self, user: User) -> None:
-        # 1. Use .filter() to find the user by string username
-        existing = self.db.query(UserModel).filter(UserModel.username == user.username).first()
-
-        if existing:
-            existing.username = user.username
-        else:
-            model = UserModel(username=user.username)
-            self.db.add(model)
-
-        self.db.commit()
+        """
+        DANGER: We are disabling 'save' for PvP to prevent it from 
+        interfering with the PvE login/registration process.
+        """
+        print(f"PvP tried to save user {user.username}, but PvP is in Read-Only mode.")
+        pass 
 
     def get(self, username: str) -> Optional[User]:
-        # 2. Use .filter() instead of .get()
+        # PvP can still look up users to see if they exist in the shared DB
         model = self.db.query(UserModel).filter(UserModel.username == username).first()
-
         if not model:
             return None
-
         return User(username=model.username)
 
     def exists(self, username: str) -> bool:
-        # 3. Use .filter() to avoid the Integer conversion crash
         return self.db.query(UserModel).filter(UserModel.username == username).first() is not None
 
     def all(self) -> List[User]:

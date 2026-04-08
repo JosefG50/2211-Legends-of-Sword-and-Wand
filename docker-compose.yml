@@ -15,8 +15,6 @@ services:
     ports:
       - "5432:5432"
 
-  # ── Battle Service (your service) ──────────────────
-  # Runs on port 8001 to match the PvE service's BATTLE_SERVICE_URL config
   battle-service:
     build:
       context: ./Battle
@@ -24,7 +22,6 @@ services:
       - "8001:8001"
     restart: unless-stopped
 
-  # ── PvE Campaign Service ────────────────────────────
   pve-service:
     build:
       context: ./Pve
@@ -40,7 +37,6 @@ services:
     ports:
       - "8000:8000"
     restart: on-failure
-    # This points to app/main.py inside the Pve folder
     command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   my-api:
@@ -49,34 +45,35 @@ services:
       dockerfile: dockerfile
     container_name: pvp-service
     volumes:
-      - ./Pvp:/app:z  # This FORCES the container to use your actual local Pvp folder
+      - ./Pvp:/app:z
     environment:
       DATABASE_URL: postgresql://pve_user:pve_pass@db:5432/pve_db
+      POSTGRES_HOST: db
     depends_on:
       db:
         condition: service_healthy
     ports:
       - "8080:8000"
     restart: on-failure
-    # Use -m to ensure it looks at the fresh module
     command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
 
   frontend:
     build:
       context: ./frontend
+    volumes:
+      - ./frontend:/app # Maps your local folder to the container
+      - /app/node_modules # Prevents local node_modules from overwriting container ones
     environment:
-<<<<<<< HEAD
       VITE_API_BASE_URL: http://localhost:8000
       VITE_MY_API_URL: http://localhost:8080
-=======
-      VITE_API_BASE_URL: http://pve-service:8000
->>>>>>> 8bcb469e91065abef7be27756d0e31cadb651cd0
-    depends_on:
-      - pve-service
-      - my-api
+      VITE_BATTLE_URL: http://localhost:8001
     ports:
       - "5173:5173"
     restart: on-failure
 
 volumes:
   pve_postgres_data:
+
+networks:
+  game-network:
+    driver: bridge

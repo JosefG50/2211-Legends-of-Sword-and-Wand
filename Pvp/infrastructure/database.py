@@ -2,11 +2,10 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Fallback to SQLite only for local testing without Docker
+# The URL is pulled from docker-compose (Postgres)
 DEFAULT_DB_URL = "sqlite:///./pvp_service.db"
 DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
 
-# Use 'check_same_thread' ONLY for SQLite
 is_sqlite = DATABASE_URL.startswith("sqlite")
 connect_args = {"check_same_thread": False} if is_sqlite else {}
 
@@ -25,9 +24,10 @@ SessionLocal = sessionmaker(
 Base = declarative_base()
 
 def init_db():
-    # Make sure to import all models so Base knows they exist
-    from infrastructure.models.user_model import UserModel
-    from infrastructure.models.party_model import PartyModel
+    # We only import the LeagueRecordModel here.
+    # We do NOT import UserModel or PartyModel because 
+    # PvE owns those tables. PvP will just "read" them.
     from infrastructure.models.league_record_model import LeagueRecordModel
     
+    # This will only create the league_records table if it doesn't exist.
     Base.metadata.create_all(bind=engine)

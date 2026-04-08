@@ -8,6 +8,24 @@ function CampaignHubScreen({ user, onCampaignSelected }) {
     const [loading, setLoading] = useState(true)
     const [creating, setCreating] = useState(false)
     const [error, setError] = useState('')
+    
+    const [pvpParties, setPvpParties] = useState([]);
+    const [pvpLoading, setPvpLoading] = useState(true);
+    // Effect for PvP Data
+    useEffect(() => {
+        async function loadPvPData() {
+            try {
+                // We fetch by username since PvP identifies users that way
+                const parties = await api.getUserParties(user.username);
+                setPvpParties(parties);
+            } catch (err) {
+                console.error("PvP Load Error:", err);
+            } finally {
+                setPvpLoading(false);
+            }
+        }
+        if (user?.username) loadPvPData();
+    }, [user.username]);
 
     useEffect(() => {
         let mounted = true
@@ -112,6 +130,37 @@ function CampaignHubScreen({ user, onCampaignSelected }) {
                             </button>
                         </div>
                     ))}
+                </section>
+            </div>
+            
+
+            {/* --- UPDATED: PVP SECTION --- */}
+            <div className="pvp-container">
+                <section className="hub-card">
+                    <h2>Proving Grounds (PvP)</h2>
+                    
+                    {pvpLoading ? (
+                        <p className="loading-inline">Searching for your squad...</p>
+                    ) : pvpParties.length > 0 ? (
+                        <div className="pvp-party-list">
+                            {pvpParties.map(party => (
+                                <div key={party.party_id} className="campaign-list-item">
+                                    <div>
+                                        <strong>{party.name}</strong>
+                                        <p>Ready for Battle</p>
+                                    </div>
+                                    <button className="primary-btn" style={{width: 'auto', padding: '8px 16px'}}>
+                                        Enter Arena
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="pvp-test-content">
+                            <p>No PvP party found. Contacting the guild...</p>
+                            <div className="test-box-visual"></div>
+                        </div>
+                    )}
                 </section>
             </div>
 

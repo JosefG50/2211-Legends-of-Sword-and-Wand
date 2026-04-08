@@ -1,52 +1,16 @@
-from sqlalchemy.orm import Session
-from domain.entities.party import Party
+# Pvp/infrastructure/repositories/party_repository.py
+
 from infrastructure.models.party_model import PartyModel
 
-
 class PartyRepository:
-
-    def __init__(self, db: Session):
+    def __init__(self, db):
         self.db = db
 
-    def save(self, party: Party) -> None:
+    def get_by_user(self, username: str):
+        # This matches the 'owner_username' column in your DB
+        return self.db.query(PartyModel).filter(PartyModel.owner_username == username).all()
 
-        model = PartyModel(
-            party_id=party.party_id,
-            owner_username=party.owner_username,
-            hero_ids=list(party.hero_ids)
-        )
-
-        existing = self.db.get(PartyModel, party.party_id)
-
-        if existing:
-            existing.owner_username = party.owner_username
-            existing.hero_ids = list(party.hero_ids)
-        else:
-            self.db.add(model)
-
+    def save(self, party_model: PartyModel):
+        self.db.add(party_model)
         self.db.commit()
-
-    def get(self, party_id: str):
-
-        model = self.db.get(PartyModel, party_id)
-
-        if not model:
-            return None
-
-        return Party(
-            party_id=model.party_id,
-            owner_username=model.owner_username,
-            hero_ids=tuple(model.hero_ids)
-        )
-
-    def all(self):
-        models = self.db.query(PartyModel).all()
-
-        return [
-            Party(
-                party_id=m.party_id,
-                owner_username=m.owner_username,
-                hero_ids=tuple(m.hero_ids)
-            )
-            for m in models
-        ]
+        self.db.refresh(party_model)
