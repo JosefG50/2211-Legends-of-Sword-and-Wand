@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pve_user
+      POSTGRES_PASSWORD: pve_pass
+      POSTGRES_DB: pve_db
+    volumes:
+      - pve_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pve_user -d pve_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  pve-service:
+    build:
+      context: ./Pve
+    environment:
+      DATABASE_URL: postgresql://pve_user:pve_pass@db:5432/pve_db
+      BATTLE_SERVICE_URL: http://battle-service:8001
+      PARTY_SERVICE_URL: http://party-service:8002
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    depends_on:
+      - pve-service
+    ports:
+      - "5173:5173"
+    restart: on-failure
+
+volumes:
+  pve_postgres_data:
