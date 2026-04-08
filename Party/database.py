@@ -10,22 +10,7 @@ db = client['legends_game']
 heroes_collection = db['heroes']
 users_collection  = db['users']
 
-# Create unique index on username so duplicates are rejected at DB level
 users_collection.create_index("username", unique=True)
-
-
-# ── User model ────────────────────────────────────────────────────────────────
-# Equivalent of:
-#   class User(Base):
-#       __tablename__ = "users"
-#       id           = Column(Integer, primary_key=True, index=True)
-#       username     = Column(String(100), unique=True, nullable=False, index=True)
-#       password_hash = Column(String(128), nullable=False)
-#       created_at   = Column(DateTime(timezone=True), server_default=func.now())
-#       updated_at   = Column(DateTime(timezone=True), onupdate=func.now())
-#
-# MongoDB stores this in the 'users' collection with the same fields.
-# The MongoDB _id acts as the primary key (equivalent to Integer id).
 
 def _hash_password(password: str) -> str:
     """SHA-256 hash of a password string."""
