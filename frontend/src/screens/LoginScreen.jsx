@@ -1,64 +1,78 @@
-import { useState } from 'react'
-import * as api from '../api'
+import { useState } from "react";
+import * as api from "../api";
 
 function LoginScreen({ onLoginSuccess }) {
-    const [username, setUsername] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    async function handleStart() {
-        if (!username || !password) {
-            setError('Fill in all fields')
-            return
-        }
-
-        setLoading(true)
-        setError('')
-
-        try {
-            const userData = await api.login(username, password)
-            onLoginSuccess(userData.user)
-        } catch {
-            setError('Login failed — check your username and password')
-        }
-
-        setLoading(false)
+  async function handleStart() {
+    if (!username.trim() || !password.trim()) {
+      setError("Please enter a username and password.");
+      return;
     }
+    setLoading(true);
+    setError("");
+    try {
+      // The PvE auth endpoint returns { user: { id, username }, created: bool }
+      // There is no token — the user object is passed directly to App.jsx state
+      const data = await api.login(username.trim(), password);
+      onLoginSuccess(data.user);
+    } catch (e) {
+      const msg =
+        e?.response?.data?.detail ||
+        "Login failed — check your username and password.";
+      setError(msg);
+    }
+    setLoading(false);
+  }
 
-    return (
-        <div className="login-screen">
-            <h1>⚔️ Legends of Sword and Wand</h1>
+  function handleKeyDown(e) {
+    if (e.key === "Enter") handleStart();
+  }
 
-            <div className="login-form">
-                <h2>Sign In</h2>
+  return (
+    <div className="login-screen">
+      <h1>⚔️ Legends of Sword and Wand</h1>
 
-                <label>Username</label>
-                <input
-                    type="text"
-                    value={username}
-                    // onChange fires every time you type a character
-                    // e.target.value is what's currently in the box
-                    onChange={e => setUsername(e.target.value)}
-                    placeholder="Enter username"
-                />
+      <div className="login-form">
+        <h2>Sign In</h2>
+        <p style={{ color: "#aaa", fontSize: "0.85rem", marginBottom: 8 }}>
+          New user? Just enter a username and password to create an account.
+        </p>
 
-                <label>Password</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="Enter password"
-                />
+        <label>Username</label>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter username"
+          autoFocus
+        />
 
-                {error && <p className="error">{error}</p>}
+        <label>Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Enter password"
+        />
 
-                <button onClick={handleStart} disabled={loading}>
-                    {loading ? 'Signing in...' : 'Continue'}
-                </button>
-            </div>
-        </div>
-    )
+        {error && <p className="error">{error}</p>}
+
+        <button
+          onClick={handleStart}
+          disabled={loading}
+          className="primary-btn"
+        >
+          {loading ? "Signing in..." : "Continue"}
+        </button>
+      </div>
+    </div>
+  );
 }
 
-export default LoginScreen
+export default LoginScreen;

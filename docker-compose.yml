@@ -23,11 +23,6 @@ services:
     ports:
       - "8001:8001"
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ── PvE Campaign Service ────────────────────────────
   pve-service:
@@ -41,7 +36,7 @@ services:
       db:
         condition: service_healthy
       battle-service:
-        condition: service_healthy
+        condition: service_started
     ports:
       - "8000:8000"
     restart: on-failure
@@ -50,7 +45,7 @@ services:
     build:
       context: ./frontend
     environment:
-      VITE_API_BASE_URL: http://localhost:8000
+      VITE_API_BASE_URL: http://pve-service:8000
     depends_on:
       - pve-service
     ports:
