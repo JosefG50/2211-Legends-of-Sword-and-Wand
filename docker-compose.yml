@@ -1,0 +1,64 @@
+services:
+
+  # ── Party Service (Flask + MongoDB, port 5001) ────────────────────────────
+  party-service:
+    build: ./Party
+    ports:
+      - "5001:5001"
+    environment:
+      MONGO_URI: "mongodb://mongo:27017/"
+    depends_on:
+      - mongo
+    restart: on-failure
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  # ── PvE / Auth Service (FastAPI + PostgreSQL, port 8000) ──────────────────
+  # Handles login, user accounts, and the campaign system.
+  # The frontend talks exclusively to this service on port 8000.
+  pve-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pve_user
+      POSTGRES_PASSWORD: pve_pass
+      POSTGRES_DB: pve_db
+    volumes:
+      - pve_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pve_user -d pve_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  pve-service:
+    build: ./Pve
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://pve_user:pve_pass@pve-db:5432/pve_db
+      BATTLE_SERVICE_URL: http://localhost:8001
+      PARTY_SERVICE_URL: http://party-service:5001
+    depends_on:
+      pve-db:
+        condition: service_healthy
+    restart: on-failure
+
+  # ── Frontend (React/Vite, port 5173) ─────────────────────────────────────
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - pve-service
+    restart: on-failure
+
+volumes:
+  mongo_data:
+  pve_postgres_data:
