@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, String, Integer
 from infrastructure.database import Base
 
 class UserModel(Base):

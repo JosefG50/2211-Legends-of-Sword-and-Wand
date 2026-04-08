@@ -1,4 +1,6 @@
 pytest
 sqlalchemy
 dataclasses
-pytest
+fastapi
+uvicorn
+psycopg2-binary
