@@ -15,6 +15,16 @@ services:
     ports:
       - "5432:5432"
 
+  # ── Battle Service (your service) ──────────────────
+  # Runs on port 8001 to match the PvE service's BATTLE_SERVICE_URL config
+  battle-service:
+    build:
+      context: ./Battle
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+
+  # ── PvE Campaign Service ────────────────────────────
   pve-service:
     build:
       context: ./Pve
@@ -25,6 +35,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      battle-service:
+        condition: service_started
     ports:
       - "8000:8000"
     restart: on-failure
@@ -53,8 +65,12 @@ services:
     build:
       context: ./frontend
     environment:
+<<<<<<< HEAD
       VITE_API_BASE_URL: http://localhost:8000
       VITE_MY_API_URL: http://localhost:8080
+=======
+      VITE_API_BASE_URL: http://pve-service:8000
+>>>>>>> 8bcb469e91065abef7be27756d0e31cadb651cd0
     depends_on:
       - pve-service
       - my-api
