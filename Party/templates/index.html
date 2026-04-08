@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Party Service — Legends of Sword and Wand</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d0f1a;
+      color: #e8e0d0;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1030, #0d1a2e);
+      border-bottom: 2px solid #4a3a6a;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    header h1 { font-size: 1.4rem; color: #c9a84c; letter-spacing: 1px; }
+    header span { color: #8870aa; font-size: 0.9rem; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #151825;
+      border: 1px solid #2a2540;
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .card h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #c9a84c;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid #2a2540;
+    }
+
+    label { display: block; font-size: 0.82rem; color: #8870aa; margin-bottom: 4px; margin-top: 12px; }
+    input, select {
+      width: 100%;
+      background: #0d0f1a;
+      border: 1px solid #2a2540;
+      border-radius: 6px;
+      color: #e8e0d0;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: #7a5ab5; }
+
+    button {
+      margin-top: 1rem;
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-primary   { background: linear-gradient(135deg, #7a5ab5, #4a3a8a); color: #fff; }
+    .btn-secondary { background: #1a1030; border: 1px solid #4a3a6a; color: #c9a84c; }
+
+    .error   { color: #f07070; font-size: 0.85rem; margin-top: 8px; }
+    .success { color: #70c070; font-size: 0.85rem; margin-top: 8px; }
+
+    /* Hero ID box */
+    .id-box {
+      background: #0d0f1a;
+      border: 1px solid #2a2540;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      color: #8870aa;
+      word-break: break-all;
+      margin-top: 8px;
+      display: none;
+    }
+
+    /* Hero display */
+    #hero-display { margin-top: 1.5rem; display: none; }
+
+    .hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .hero-name-block h3 { font-size: 1.3rem; color: #c9a84c; }
+    .hero-name-block p  { font-size: 0.82rem; color: #8870aa; margin-top: 2px; }
+    .level-badge {
+      background: #7a5ab5;
+      color: #fff;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .status-badge {
+      display: inline-block;
+      background: #2a1a50;
+      color: #b090f0;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .xp-bar-wrap { margin-bottom: 1rem; }
+    .xp-labels { display: flex; justify-content: space-between; font-size: 0.78rem; color: #8870aa; margin-bottom: 4px; }
+    .xp-bar { height: 6px; background: #2a2540; border-radius: 3px; overflow: hidden; }
+    .xp-fill { height: 100%; background: linear-gradient(90deg, #7a5ab5, #c9a84c); border-radius: 3px; transition: width 0.4s; }
+
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+    .stat-box {
+      background: #0d0f1a;
+      border: 1px solid #2a2540;
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    .stat-val { font-size: 1.2rem; font-weight: 700; }
+    .stat-lbl { font-size: 0.72rem; color: #8870aa; text-transform: uppercase; letter-spacing: 1px; }
+
+    .class-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+    .class-badge {
+      background: #1a1030;
+      border: 1px solid #4a3a6a;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      color: #c9a84c;
+    }
+
+    .abilities-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+    .ability-row {
+      background: #0d0f1a;
+      border: 1px solid #2a2540;
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ability-name { font-size: 0.88rem; font-weight: 600; }
+    .ability-meta { font-size: 0.75rem; color: #8870aa; }
+    .ability-type {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .type-spell   { background: #1a1060; color: #8080f0; }
+    .type-special { background: #401010; color: #f08080; }
+    .type-passive { background: #104010; color: #80c080; }
+
+    .levelup-section { padding-top: 1rem; border-top: 1px solid #2a2540; }
+    .class-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 0.5rem; }
+    .class-btn {
+      padding: 0.5rem;
+      font-size: 0.82rem;
+      background: #1a1030;
+      border: 1px solid #4a3a6a;
+      color: #c9a84c;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0;
+      width: auto;
+      transition: background 0.2s;
+    }
+    .class-btn:hover { background: #2a1a50; }
+
+    .lookup-row { display: flex; gap: 8px; align-items: flex-end; }
+    .lookup-row input { flex: 1; }
+    .lookup-row button { margin-top: 0; width: auto; padding: 0.5rem 1rem; white-space: nowrap; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚔️ Legends of Sword and Wand</h1>
+  <span>Party Service — Hero Management</span>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- CREATE HERO -->
+    <div class="card">
+      <h2>Create Hero</h2>
+
+      <label>Username</label>
+      <input id="c-username" type="text" placeholder="Your username"/>
+
+      <label>Hero Name</label>
+      <input id="c-heroname" type="text" placeholder="Name your hero"/>
+
+      <label>Starting Class</label>
+      <select id="c-class">
+        <option value="Warrior">⚔️ Warrior</option>
+        <option value="Order">🛡️ Order</option>
+        <option value="Chaos">🔥 Chaos</option>
+        <option value="Mage">🪄 Mage</option>
+      </select>
+
+      <button class="btn-primary" onclick="createHero()">Create Hero</button>
+      <div id="c-msg"></div>
+
+      <div id="c-id-wrap" style="display:none">
+        <label style="margin-top:12px">Hero ID — save this to look up your hero</label>
+        <div class="id-box" id="c-id-val" style="display:block"></div>
+      </div>
+    </div>
+
+    <!-- LOOK UP HERO -->
+    <div class="card">
+      <h2>Look Up Hero</h2>
+
+      <label>Hero ID</label>
+      <div class="lookup-row">
+        <input id="l-id" type="text" placeholder="Paste hero ID here"/>
+        <button class="btn-primary" onclick="lookupHero()">Search</button>
+      </div>
+      <div id="l-msg"></div>
+
+      <!-- HERO DISPLAY -->
+      <div id="hero-display">
+
+        <div class="hero-header">
+          <div class="hero-name-block">
+            <h3 id="h-name"></h3>
+            <p id="h-username"></p>
+          </div>
+          <span class="level-badge" id="h-level"></span>
+        </div>
+
+        <div class="status-badge" id="h-class-title"></div>
+
+        <div class="xp-bar-wrap">
+          <div class="xp-labels">
+            <span>XP</span>
+            <span id="h-xp-label"></span>
+          </div>
+          <div class="xp-bar">
+            <div class="xp-fill" id="h-xp-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-box"><div class="stat-val" id="h-atk"></div><div class="stat-lbl">Attack</div></div>
+          <div class="stat-box"><div class="stat-val" id="h-def"></div><div class="stat-lbl">Defense</div></div>
+          <div class="stat-box"><div class="stat-val" id="h-hp"></div><div class="stat-lbl">HP</div></div>
+          <div class="stat-box"><div class="stat-val" id="h-mana"></div><div class="stat-lbl">Mana</div></div>
+        </div>
+
+        <label style="margin-bottom:6px">Class Levels</label>
+        <div class="class-badges" id="h-class-levels"></div>
+
+        <label style="margin-bottom:6px">Abilities</label>
+        <div class="abilities-list" id="h-abilities"></div>
+
+        <div class="levelup-section" id="levelup-section">
+          <label>Level Up — pick a class to advance</label>
+          <div class="class-btn-grid">
+            <button class="class-btn" onclick="levelUp('Order')">🛡️ Order</button>
+            <button class="class-btn" onclick="levelUp('Chaos')">🔥 Chaos</button>
+            <button class="class-btn" onclick="levelUp('Warrior')">⚔️ Warrior</button>
+            <button class="class-btn" onclick="levelUp('Mage')">🪄 Mage</button>
+          </div>
+          <div id="lu-msg"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const API = window.location.origin
+  let currentHeroId = null
+
+  function msg(id, text, isError) {
+    const el = document.getElementById(id)
+    el.textContent = text
+    el.className = isError ? 'error' : 'success'
+  }
+
+  // ── Create Hero ────────────────────────────────────────────────────────────
+
+  async function createHero() {
+    const username     = document.getElementById('c-username').value.trim()
+    const hero_name    = document.getElementById('c-heroname').value.trim()
+    const initial_class = document.getElementById('c-class').value
+
+    if (!username || !hero_name) { msg('c-msg', 'Fill in all fields.', true); return }
+
+    try {
+      const res  = await fetch(`${API}/hero/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, hero_name, initial_class })
+      })
+      const data = await res.json()
+      if (!res.ok) { msg('c-msg', data.error || 'Failed.', true); return }
+
+      msg('c-msg', 'Hero created!', false)
+      document.getElementById('c-id-wrap').style.display = 'block'
+      document.getElementById('c-id-val').textContent = data.hero_id
+
+      // Auto-load the new hero in the lookup panel
+      currentHeroId = data.hero_id
+      document.getElementById('l-id').value = data.hero_id
+      await loadHero(data.hero_id)
+
+    } catch { msg('c-msg', 'Could not reach server.', true) }
+  }
+
+  // ── Look Up Hero ───────────────────────────────────────────────────────────
+
+  async function lookupHero() {
+    const id = document.getElementById('l-id').value.trim()
+    if (!id) { msg('l-msg', 'Enter a hero ID.', true); return }
+    document.getElementById('l-msg').textContent = ''
+    await loadHero(id)
+  }
+
+  async function loadHero(heroId) {
+    try {
+      const res  = await fetch(`${API}/hero/${heroId}`)
+      const data = await res.json()
+      if (!res.ok) {
+        msg('l-msg', data.error || 'Hero not found.', true)
+        document.getElementById('hero-display').style.display = 'none'
+        return
+      }
+      currentHeroId = heroId
+      render(data)
+    } catch { msg('l-msg', 'Could not reach server.', true) }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  function render(h) {
+    document.getElementById('hero-display').style.display = 'block'
+    document.getElementById('h-name').textContent        = h.hero_name
+    document.getElementById('h-level').textContent       = `Lv. ${h.total_level}`
+    document.getElementById('h-class-title').textContent = h.status.class_title
+    document.getElementById('h-atk').textContent         = h.stats.attack
+    document.getElementById('h-def').textContent         = h.stats.defense
+    document.getElementById('h-hp').textContent          = h.stats.hp
+    document.getElementById('h-mana').textContent        = h.stats.mana
+
+    const pct = h.xp_to_next_level > 0
+      ? Math.min(100, Math.round((h.current_xp / h.xp_to_next_level) * 100))
+      : 100
+    document.getElementById('h-xp-label').textContent = `${h.current_xp} / ${h.xp_to_next_level}`
+    document.getElementById('h-xp-fill').style.width  = `${pct}%`
+
+    // Class levels
+    const cl = document.getElementById('h-class-levels')
+    cl.innerHTML = ''
+    for (const [cls, lvl] of Object.entries(h.class_levels)) {
+      if (lvl > 0) {
+        const b = document.createElement('span')
+        b.className   = 'class-badge'
+        b.textContent = `${cls} ${lvl}`
+        cl.appendChild(b)
+      }
+    }
+
+    // Abilities
+    const ab = document.getElementById('h-abilities')
+    ab.innerHTML = ''
+    if (!h.abilities.length) {
+      ab.innerHTML = '<p style="color:#666;font-size:0.82rem">No abilities yet.</p>'
+    } else {
+      h.abilities.forEach(a => {
+        const row = document.createElement('div')
+        row.className = 'ability-row'
+        row.innerHTML = `
+          <div>
+            <div class="ability-name">${a.name}</div>
+            ${a.effect_modifier ? `<div class="ability-meta">${a.effect_modifier}</div>` : ''}
+          </div>
+          <div style="text-align:right">
+            <div class="ability-meta">${a.mana_cost} MP</div>
+            <span class="ability-type type-${a.type}">${a.type}</span>
+          </div>`
+        ab.appendChild(row)
+      })
+    }
+
+    document.getElementById('levelup-section').style.display =
+      h.total_level >= 20 ? 'none' : 'block'
+    document.getElementById('lu-msg').textContent = ''
+  }
+
+  // ── Level Up ───────────────────────────────────────────────────────────────
+
+  async function levelUp(cls) {
+    if (!currentHeroId) return
+    try {
+      const res  = await fetch(`${API}/hero/${currentHeroId}/level_up`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ class_to_level: cls })
+      })
+      const data = await res.json()
+      if (!res.ok) { msg('lu-msg', data.error || 'Failed.', true); return }
+      msg('lu-msg', data.message, false)
+      await loadHero(currentHeroId)
+    } catch { msg('lu-msg', 'Could not reach server.', true) }
+  }
+</script>
+</body>
+</html>

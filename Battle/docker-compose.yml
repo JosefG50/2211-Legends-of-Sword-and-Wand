@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  battle-service:
+    build: .
+    ports:
+      - "5003:5003"
+    environment:
+      - DATABASE_URL=sqlite:///pvp.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Auth / Profile Service ──────────────────────────
+  auth-service:
+    image: your-dockerhub/auth-service:latest
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  # ── Class & Stats Service ───────────────────────────
+  stats-service:
+    image: your-dockerhub/stats-service:latest
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+  # ── PvE Campaign Service ────────────────────────────
+  pve-service:
+    image: your-dockerhub/pve-service:latest
+    ports:
+      - "5002:5002"
+    restart: unless-stopped
+
+  # ── Inn / Items Service ─────────────────────────────
+  inn-service:
+    image: your-dockerhub/inn-service:latest
+    ports:
+      - "5004:5004"
+    restart: unless-stopped
+
+  # ── Frontend / Client ───────────────────────────────
+  frontend:
+    image: your-dockerhub/frontend:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - battle-service
+      - auth-service
+      - stats-service
+      - pve-service
+      - inn-service
+    restart: unless-stopped

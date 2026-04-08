@@ -182,3 +182,81 @@
     border-right-color: var(--border);
   }
 }
+
+/* ── Hero abilities on campaign screen ─────────────────────────────────── */
+.hero-abilities {
+  margin-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 6px;
+}
+.abilities-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8870aa;
+  margin-bottom: 4px;
+}
+.no-abilities {
+  font-size: 0.75rem;
+  color: #555;
+  font-style: italic;
+}
+.ability-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  margin-bottom: 3px;
+}
+.ability-spell   { background: #1a1060; color: #a0a0f0; }
+.ability-special { background: #401010; color: #f09090; }
+.ability-passive { background: #104010; color: #80c080; }
+.ability-icon  { font-size: 0.85rem; }
+.ability-name  { flex: 1; font-weight: 500; }
+.ability-cost  { font-size: 0.7rem; color: #aaa; white-space: nowrap; }
+.ability-passive-tag {
+  font-size: 0.65rem;
+  color: #80c080;
+  border: 1px solid #80c080;
+  border-radius: 3px;
+  padding: 0 4px;
+}
+
+/* ── Battle ability buttons ─────────────────────────────────────────────── */
+.ability-divider {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #666;
+  margin: 6px 0 4px;
+  letter-spacing: 1px;
+}
+.cast-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-left: 3px solid #7a5ab5 !important;
+}
+.cast-btn.cant-afford {
+  opacity: 0.45;
+  border-left-color: #444 !important;
+}
+.ability-mp-cost {
+  font-size: 0.72rem;
+  color: #8870aa;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+.passive-ability {
+  font-size: 0.78rem;
+  color: #80c080;
+  padding: 3px 8px;
+  background: #0a1f0a;
+  border-radius: 5px;
+  margin-top: 3px;
+}
+.passive-tag {
+  color: #4a8a4a;
+  font-style: italic;
+}

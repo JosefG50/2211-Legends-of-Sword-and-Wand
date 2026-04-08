@@ -1,8 +1,18 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
 import database
 import logic
 
 app = Flask(__name__)
+CORS(app)
+
+# ── Frontend ──────────────────────────────────────────────────────────────────
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# ── API ───────────────────────────────────────────────────────────────────────
 
 @app.route('/hero/create', methods=['POST'])
 def create_hero():
@@ -40,25 +50,24 @@ def get_hero(hero_id):
         },
         "abilities": abilities
     }
-    
+
     return jsonify(response_data), 200
 
 @app.route('/hero/<hero_id>/level_up', methods=['POST'])
 def level_up_hero(hero_id):
     data = request.json
     class_to_level = data.get('class_to_level')
-    
+
     hero_record = database.get_hero_record(hero_id)
     if not hero_record:
         return jsonify({"error": "Hero not found"}), 404
 
     if hero_record['total_level'] >= 20:
         return jsonify({"error": "Hero is already at maximum level (20)"}), 400
-    
-    # Update levels
+
     new_total_level = hero_record['total_level'] + 1
     hero_record['class_levels'][class_to_level] += 1
-    
+
     is_hybrid, hybrid_name, _ = logic.determine_classes(hero_record['class_levels'])
 
     database.update_hero_record(hero_id, {
