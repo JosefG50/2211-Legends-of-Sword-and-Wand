@@ -1,0 +1,61 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pve_user
+      POSTGRES_PASSWORD: pve_pass
+      POSTGRES_DB: pve_db
+    volumes:
+      - pve_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pve_user -d pve_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  # ── Battle Service (your service) ──────────────────
+  # Runs on port 8001 to match the PvE service's BATTLE_SERVICE_URL config
+  battle-service:
+    build:
+      context: ./Battle
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── PvE Campaign Service ────────────────────────────
+  pve-service:
+    build:
+      context: ./Pve
+    environment:
+      DATABASE_URL: postgresql://pve_user:pve_pass@db:5432/pve_db
+      BATTLE_SERVICE_URL: http://battle-service:8001
+      PARTY_SERVICE_URL: http://party-service:8002
+    depends_on:
+      db:
+        condition: service_healthy
+      battle-service:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      VITE_API_BASE_URL: http://pve-service:8000
+    depends_on:
+      - pve-service
+    ports:
+      - "5173:5173"
+    restart: on-failure
+
+volumes:
+  pve_postgres_data:

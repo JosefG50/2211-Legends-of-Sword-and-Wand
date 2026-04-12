@@ -1,0 +1,79 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pve_user
+      POSTGRES_PASSWORD: pve_pass
+      POSTGRES_DB: pve_db
+    volumes:
+      - pve_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pve_user -d pve_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+
+  battle-service:
+    build:
+      context: ./Battle
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+
+  pve-service:
+    build:
+      context: ./Pve
+    environment:
+      DATABASE_URL: postgresql://pve_user:pve_pass@db:5432/pve_db
+      BATTLE_SERVICE_URL: http://battle-service:8001
+      PARTY_SERVICE_URL: http://party-service:8002
+    depends_on:
+      db:
+        condition: service_healthy
+      battle-service:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    command: python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  my-api:
+    build:
+      context: ./Pvp
+      dockerfile: dockerfile
+    container_name: pvp-service
+    volumes:
+      - ./Pvp:/app:z
+    environment:
+      DATABASE_URL: postgresql://pve_user:pve_pass@db:5432/pve_db
+      POSTGRES_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8000"
+    restart: on-failure
+    command: python -m uvicorn main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+    volumes:
+      - ./frontend:/app # Maps your local folder to the container
+      - /app/node_modules # Prevents local node_modules from overwriting container ones
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+      VITE_MY_API_URL: http://localhost:8080
+      VITE_BATTLE_URL: http://localhost:8001
+    ports:
+      - "5173:5173"
+    restart: on-failure
+
+volumes:
+  pve_postgres_data:
+
+networks:
+  game-network:
+    driver: bridge

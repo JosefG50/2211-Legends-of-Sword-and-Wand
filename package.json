@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@react-login-page/page10": "^1.0.6",
+    "axios": "^1.14.0"
+  }
+}
